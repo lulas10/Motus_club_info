@@ -13,41 +13,6 @@ Window.size = (360,800)
 #suite à décommenter lors de la compilation du programe
 #Window.maximize()
 
-class LetterInput(TextInput):
-    """Case ne contenant qu'une seul lettre."""
-    
-    def __init__(self, **kwargs):
-        super().__init__(
-            multiline = False,
-            halign = "center",
-            font_size = "20sp",
-            write_tab = False,
-            **kwargs,
-        )
-        self.next_input = None
-        self.prev_input = None
-        
-    def insert_text(self,substring,from_undo = False):
-        lettre = "".join(c for c in substring if c.isalpha())[:1].upper()
-        if not lettre:
-            return super().insert_text("",from_undo=from_undo)
-        self.text = ""
-        resultat = super().insert_text(lettre,from_undo=from_undo)
-        if self.next_input:
-            Clock.schedule_once(lambda dt: setattr(self.next_input, "focus", True),0)
-        return resultat
-    
-    def keyboard_on_key_down(self,window,keycode,text,modifiers):
-        if keycode[1] == "backspace":
-            if self.text:
-                self.text = ""
-            elif self.prev_input:
-                self.prev_input.text = ""
-                Clock.schedule_once(lambda dt: setattr(self.prev_input,"focus",True),0)
-            return True
-        return super().keyboard_on_key_down(window,keycode,text,modifiers)
-    
-    
 class Motus():
     def __init__(self, **kwargs):
         super(Motus,self).__init__(**kwargs)
