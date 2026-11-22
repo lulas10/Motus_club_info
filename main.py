@@ -7,41 +7,77 @@ from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.base import runTouchApp
 
-def main() -> BoxLayout:
-    """
-        Créer la fenêtre de l'écran pour le jeu.
+IMAGE_PATH = "button_image\\"
+NB_ESSAI = 6
+NB_LETTRE = 5
 
-        Entrée : Aucune.
+class Case(Button):
+    def __init__(self, **kwargs):
+        super().__init__(
+            disabled = True,
+            disabled_color = (1,1,1,1),
+            font_size = "32sp",
+            **kwargs,
+        )
 
-        Sortie : Aucune.
-    """
-    Window.size = (350, 700)
-    main_box: BoxLayout = BoxLayout(orientation = 'vertical')
-    main_box.add_widget(Label(text = 'Motus'))
-    for _ in range(6):
-        try_label: BoxLayout = BoxLayout(orientation = 'horizontal')
-        cases = [Button(disabled = True) for _ in range(5)]
-        for _, case in enumerate(cases):
-            try_label.add_widget(case)
-        main_box.add_widget(try_label)
-    keyboard_label: BoxLayout = BoxLayout(orientation = 'vertical')
-    chaine_lettre_bouton: str = 'azertyuiopqsdfghjklmwxcvbn'
-    variant_choix_lettre: int = 0
-    for _ in range(2):
-        row: BoxLayout = BoxLayout(orientation = 'horizontal')
-        for _ in range(10):
-            row.add_widget(Button(text = chaine_lettre_bouton[variant_choix_lettre], background_color = [0, 255, 0, 1]))
-            variant_choix_lettre += 1
-        keyboard_label.add_widget(row)
-    row: BoxLayout = BoxLayout(orientation = 'horizontal')
-    row.add_widget(Button(text = '<-', size_hint_x = 2))
-    for _ in range(6):
-        row.add_widget(Button(text = chaine_lettre_bouton[variant_choix_lettre], background_color = [0, 255, 0, 1]))
-        variant_choix_lettre += 1
-    row.add_widget(Button(text = 'Valider', size_hint_x = 2))
-    keyboard_label.add_widget(row)
-    main_box.add_widget(keyboard_label)
-    return main_box
+class Motus(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(orientation="vertical",**kwargs)
+        self.ligne = 0
+        self.colone = 0
+        self.grille = []
+
+        self.add_widget(Label(text = "Motus"))
+
+        #grille de tentatives
+        for _ in range(NB_ESSAI):
+            ligne = BoxLayout(orientation = "horizontal")
+            cases = [Case() for _ in range(NB_LETTRE)]
+            for case in cases:
+                ligne.add_widget(case)
+            self.grille.append(cases)
+            self.add_widget(ligne)
+
+        #clavier virtuelle
+        clavier = BoxLayout(orientation="vertical",size_hint_y = 1.4)
+        chaine_lettre_bouton = ["azertyuiop","qsdfghjklm","wxcvbn"]
+        for i, lettres in enumerate(chaine_lettre_bouton):
+            ligne = BoxLayout(orientation = "horizontal")
+            if i == 2: # ajoute le bouton pour effacer au début de la deuxième colone
+                ligne.add_widget(self.bouton_image("backspace", self.effacer_lettre,size_hint_x = 2))
+            for lettre in lettres:
+                ligne.add_widget(self.bouton_image(lettre, lambda btn, l=lettre: self.ajouter_lettre(l)))
+            if i == 2:
+                ligne.add_widget(self.bouton_image("valider", self.valider,size_hint_x=2))
+            clavier.add_widget(ligne)
+        self.add_widget(clavier)
+
+    def bouton_image(self, nom, action, **kwargs):
+        bouton = Button(
+            background_normal= IMAGE_PATH + nom + "_light.png",
+            **kwargs,
+        )
+        bouton.bind(on_press=action)
+        return bouton
+
+    def ajouter_lettre(self, lettre):
+        if self.ligne < NB_ESSAI and self.colone < NB_LETTRE:
+            self.grille[self.ligne][self.colone].text = lettre.upper()
+            self.colone+=1
+    
+    def effacer_lettre(self, *args):
+        if self.colone > 0:
+            self.colone -= 1
+            self.grille[self.ligne][self.colone].text = ""
+    
+    def valider(self, *args):
+        if self.colone == NB_LETTRE:
+            # A faire : vérification du mot
+            self.ligne += 1
+            self.colone = 0
+
+
 
 if __name__ == "__main__":
-    runTouchApp(main())
+    Window.size = (360,800)
+    runTouchApp(Motus())
