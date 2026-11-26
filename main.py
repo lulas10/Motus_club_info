@@ -72,6 +72,7 @@ class Motus(BoxLayout):
     
     def valider(self, *args):
         if self.colone == NB_LETTRE:
+            self.grille[ligne][colone].background_color = [255,0,0,1]
             # A faire : vérification du mot
             self.ligne += 1
             self.colone = 0
